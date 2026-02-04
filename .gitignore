@@ -1,0 +1,24 @@
+# General
+.DS_Store
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+.venv
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+dist/
+.next/
+coverage/
+
+# API Keys and Secrets
+secrets.py
+*.key
+*.pem
