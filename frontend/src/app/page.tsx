@@ -1,15 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DashboardMock from "@/components/Dashboard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, Loader2, Search } from "lucide-react";
+import { AlertCircle, Loader2, Search, LogOut } from "lucide-react";
 
 export default function Home() {
+  const router = useRouter();
+  const [isAuth, setIsAuth] = useState(false);
   const [repoUrl, setRepoUrl] = useState("https://github.com/fastapi/fastapi");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const authenticated = localStorage.getItem("isAuthenticated");
+    if (!authenticated) {
+      router.push("/login");
+    } else {
+      setIsAuth(true);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    router.push("/login");
+  };
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +56,10 @@ export default function Home() {
     }
   };
 
+  if (!isAuth) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
       {/* Search Bar / Input Section */}
@@ -65,6 +86,14 @@ export default function Home() {
               {loading ? "Analyzing..." : "Run Pre-Mortem"}
             </button>
           </form>
+
+          <button
+            onClick={handleLogout}
+            className="text-zinc-400 hover:text-zinc-200 transition-colors p-2 rounded-md hover:bg-zinc-800/50"
+            title="Sign Out"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
@@ -75,7 +104,7 @@ export default function Home() {
             <div className="h-16 w-16 bg-zinc-900 rounded-full flex items-center justify-center mb-4 border border-zinc-800">
               <span className="text-3xl">💀</span>
             </div>
-            <h1 className="text-3xl font-bold text-zinc-100">RepoPremortem</h1>
+            <h1 className="text-3xl font-bold text-zinc-100">RepoPremortem AI</h1>
             <p className="text-zinc-400 max-w-md">
               Paste a GitHub repository URL above to let Gemini 3 predict its inevitable failure in production.
             </p>

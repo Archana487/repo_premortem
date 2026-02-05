@@ -41,5 +41,10 @@ You must output VALID JSON only. No markdown formatting outside the JSON block.
     "long_term": "What breaks in year+ (e.g., integer overflow, ID exhaustion)"
   },
   "scale_cliff": "Specific description of what component breaks first at 10x load.",
-  "survival_probability": 0.15 // 0.0 to 1.0 estimate of surviving the first month without downtime
+  "survival_probability": 0.15, // 0.0 to 1.0 estimate of surviving the first month without downtime
+  "beginner_explanation": {
+      "summary_analogy": "A simple real-world analogy (e.g. 'This system is like a restaurant with only one chef but 1000 waiters').",
+      "risk_score": 45, // 0-100 where 100 is perfectly safe
+      "simple_risks": ["Database will get stuck", "Passwords are too easy to guess", "Images take too long to load"]
+  }
 }
