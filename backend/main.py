@@ -61,7 +61,14 @@ def analyze_repo_content(repo_url: str):
     temp_dir = tempfile.mkdtemp()
     try:
         print(f"Cloning {repo_url} into {temp_dir}...")
-        git.Repo.clone_from(repo_url, temp_dir, depth=1)
+        # Optimize clone: depth=1, single_branch=True, no_tags=True for speed
+        git.Repo.clone_from(
+            repo_url, 
+            temp_dir, 
+            depth=1, 
+            single_branch=True, 
+            no_tags=True
+        )
         
         file_tree_lines = []
         source_content_parts = []
@@ -105,11 +112,18 @@ def analyze_repo_content(repo_url: str):
                 elif ext in RELEVANT_EXTENSIONS and current_source_chars < MAX_SOURCE_CHARS:
                     try:
                         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                            content = f.read()
-                            # Basic check to avoid minified files or huge logs
-                            if len(content) < 50000 and "\x00" not in content: 
+                            # Prioritize smaller, representative files for analysis speed
+                            content = f.read(50000) # Read max 50k chars per file
+                            if "\x00" not in content: 
                                 source_part = f"\n# --- {rel_file_path} ---\n{content}\n"
-                                source_content_parts.append(source_part)
+                                
+                                # Highly relevant files go to the front
+                                is_priority = any(p in file.lower() for p in ["main", "app", "index", "package.json", "requirements.txt"])
+                                if is_priority:
+                                    source_content_parts.insert(0, source_part)
+                                else:
+                                    source_content_parts.append(source_part)
+                                    
                                 current_source_chars += len(source_part)
                     except Exception:
                         continue # Skip unreadable files
@@ -150,8 +164,12 @@ async def analyze_repo(repo_url: str):
         raise HTTPException(status_code=503, detail="Gemini API Key not found. Please set GOOGLE_API_KEY environment variable.")
 
     # 1. Fetch Repository Content (REAL)
+    # Use asyncio.to_thread to prevent blocking the event loop during heavy IO/Git operations
+    import asyncio
     print(f"Processing request for: {repo_url}")
-    file_tree_context, source_files_context, readme_context = analyze_repo_content(repo_url)
+    file_tree_context, source_files_context, readme_context = await asyncio.to_thread(
+        analyze_repo_content, repo_url
+    )
 
     # 2. Construct the Prompt
     raw_prompt = load_prompt_template()
