@@ -8,10 +8,12 @@ import google.generativeai as genai
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import PreMortemAnalysis
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # --- Configuration ---
-# In a real app, use python-dotenv. For this hackathon demo, we read from env or hardcode a placeholder
-# In a real app, use python-dotenv. For this hackathon demo, we read from env or hardcode a placeholder
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not GOOGLE_API_KEY:
@@ -184,3 +186,7 @@ async def analyze_repo(repo_url: str):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Gemini Analysis Failed: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
