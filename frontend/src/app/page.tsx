@@ -36,7 +36,8 @@ export default function Home() {
 
     try {
       // Note: We use the full URL for localhost. In production, this would be an env var.
-      const response = await fetch(`http://localhost:8000/analyze?repo_url=${encodeURIComponent(repoUrl)}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/analyze?repo_url=${encodeURIComponent(repoUrl)}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
